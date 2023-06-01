@@ -1,5 +1,4 @@
 import java.sql.*;
-import java.util.*;
 
 public class Horse {
     static String DB_URL = "jdbc:postgresql://localhost:5432/horse_racing_sim";
@@ -27,11 +26,8 @@ public class Horse {
     }
 
     public int getSpeed() {
-        return this.speed;
-    }
 
-    public String getHorseName() {
-        return this.name;
+        return this.speed;
     }
 
     public void checkWinsTotal(){

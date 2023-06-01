@@ -12,7 +12,7 @@ public class Main {
         User user = initialLoginWorkflow(userScan, userOptions);
         String userResponse = "";
         Race race = new Race();
-        ArrayList<Horse> horses = null;
+        ArrayList<Horse> horses;
         printWelcome();
         horses = horsesRacingSelection();
         while (!userResponse.equalsIgnoreCase("Q")) {
@@ -108,9 +108,9 @@ public class Main {
     }
 
     public static ArrayList<Horse> horsesRacingSelection() {
-        ArrayList<Horse>  horsesArray = new ArrayList<Horse>();
+        ArrayList<Horse>  horsesArray = new ArrayList<>();
         String SQL_TEST = "SELECT * FROM horses ORDER BY RANDOM() LIMIT 8;";
-        try(Connection conn = DriverManager.getConnection(DB_URL);) {
+        try(Connection conn = DriverManager.getConnection(DB_URL)) {
             PreparedStatement stmt = conn.prepareStatement(SQL_TEST);
         ResultSet rs = stmt.executeQuery();
         while(rs.next()) {
@@ -193,7 +193,7 @@ public class Main {
         String prompt = "Would you like to start a [r]ace or [q]uit or check a horse's number of [W]ins? >";
         System.out.println(prompt);
         String userResponse = userScan.nextLine().toUpperCase().trim();
-        ArrayList<String> validResponses = new ArrayList<String>(Arrays.asList("R", "Q", "W"));
+        ArrayList<String> validResponses = new ArrayList<>(Arrays.asList("R", "Q", "W"));
         while (!validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W")) {
             System.out.println(prompt);
             userResponse = userScan.nextLine().toUpperCase().trim();
@@ -206,11 +206,13 @@ public class Main {
         String prompt = "Would you like to [d]elete a user, [a]dd a horse, [u]pdate a user password, [r]ace, check [w]ins of a horse, or [q]uit? > ";
         System.out.println(prompt);
         String userResponse = userScan.nextLine().toUpperCase().trim();
-        ArrayList<String> validResponses = new ArrayList<String>(Arrays.asList("R", "Q", "W", "U", "A", "D"));
+        ArrayList<String> validResponses = new ArrayList<>(Arrays.asList("R", "Q", "W", "U", "A", "D"));
         boolean validInput = !validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W") && !validResponses.contains("A") && !validResponses.contains("D") && !validResponses.contains("U");
         while (validInput) {
             System.out.println(prompt);
             userResponse = userScan.nextLine().toUpperCase().trim();
+            validInput = !validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W") && !validResponses.contains("A") && !validResponses.contains("D") && !validResponses.contains("U");
+
         }
         return userResponse;
     }
@@ -222,7 +224,7 @@ public class Main {
         String prompt = "Would you like to check the number of wins [Y]ou've gotten with this horse or how many [T]otal wins it has gotten? >";
         System.out.println(prompt);
         String userResponse = userScan.nextLine().toUpperCase().trim();
-        ArrayList<String> validResponses = new ArrayList<String>(Arrays.asList("Y", "T"));
+        ArrayList<String> validResponses = new ArrayList<>(Arrays.asList("Y", "T"));
         while (!validResponses.contains("Y") && !validResponses.contains("T")) {
             System.out.println(prompt);
             userResponse = userScan.nextLine().toUpperCase().trim();
@@ -233,7 +235,7 @@ public class Main {
     // Bet Results
 
     public static int betResults(int bet, Horse horseSelection, ArrayList<Horse> horsesInRacingOrder) {
-        HashMap<String, Integer> placingBetValues = new HashMap<String, Integer>();
+        HashMap<String, Integer> placingBetValues = new HashMap<>();
         placingBetValues.put("first", bet * 3);
         placingBetValues.put("second", bet * 2);
         placingBetValues.put("third", bet);
@@ -244,12 +246,10 @@ public class Main {
             System.out.println("You bet " + bet + " coins and so you collect " + placingBetValues.get("first") + "!");
             return placingBetValues.get("first");
         } else if (horseSelection.equals(horsesInRacingOrder.get(1))) {
-            int winningAmount = bet * 3;
             System.out.println("Your horse, " + horseSelection.name + " got second place!");
             System.out.println("You bet " + bet + " coins and so you collect " + placingBetValues.get("second") + "!");
             return placingBetValues.get("second");
         } else if (horseSelection.equals(horsesInRacingOrder.get(2))) {
-            int winningAmount = bet * 2;
             System.out.println("Your horse, " + horseSelection.name + " got third place!");
             System.out.println("You bet " + bet + " coins and so you collect " + placingBetValues.get("third") + "!");
             return placingBetValues.get("third");
