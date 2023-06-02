@@ -43,9 +43,7 @@ grant create, usage on schema public to "Alyx C";
     ========== Query Delete User:
     "DELETE FROM users WHERE username = ?;"
 
-    ========== Query Join:
-    "SELECT firstPlace FROM races INNER JOIN horses ON races.firstPlace = horses.id;"
+    ========== Query Join to see which horses have never won a race:
+    "SELECT horses.id, name FROM horses LEFT JOIN races ON horses.id = races.first_place_horse_id WHERE first_place_horse_id IS NULL;";
 
-    ========== Query Join:
-    "SELECT user FROM races INNER JOIN users ON races.user = user.id:"
  */

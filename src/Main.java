@@ -1,10 +1,11 @@
 import java.util.*;
 import java.sql.*;
+
 public class Main {
     static final String DB_URL = "jdbc:postgresql://localhost:5432/horse_racing_sim";
     static final UserOptions userOptions = new UserOptions();
 
-    static String INSERT_HORSE_SQL = "INSERT INTO horses(name, topSpeed, slowestSpeed) VALUES(?, ?, ?);";
+    static String INSERT_HORSE_SQL = "INSERT INTO horses(name, topSpeed, slowestSpeed, color, age) VALUES(?, ?, ?, ?, ?);";
 
     // Main User Workflow;
     public static void main(String[] args) {
@@ -68,6 +69,8 @@ public class Main {
                     // Add a New Horse
                 } else if (userResponse.equalsIgnoreCase("A")) {
                     addHorse(userScan);
+                } else if (userResponse.equalsIgnoreCase("N")) {
+                    checkHorsesNeverWon();
                 }
 
                 // IF USER GOES NEGATIVE OR AT 0.
@@ -190,11 +193,11 @@ public class Main {
 
     // Core User Workflow Validation
     public static String userWorkflowValidation(Scanner userScan) {
-        String prompt = "Would you like to start a [r]ace or [q]uit or check a horse's number of [W]ins? >";
+        String prompt = "Would you like to start a [r]ace, check a horse's number of [w]ins, check which horses have [n]ot won a race, or [q]uit?  >";
         System.out.println(prompt);
         String userResponse = userScan.nextLine().toUpperCase().trim();
-        ArrayList<String> validResponses = new ArrayList<>(Arrays.asList("R", "Q", "W"));
-        while (!validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W")) {
+        ArrayList<String> validResponses = new ArrayList<>(Arrays.asList("R", "Q", "W", "N"));
+        while (!validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W") && !validResponses.contains("N")) {
             System.out.println(prompt);
             userResponse = userScan.nextLine().toUpperCase().trim();
         }
@@ -203,15 +206,15 @@ public class Main {
 
     // Admin User Workflow Validation
     public static String adminUserWorkflowValidation(Scanner userScan) {
-        String prompt = "Would you like to [d]elete a user, [a]dd a horse, [u]pdate a user password, [r]ace, check [w]ins of a horse, or [q]uit? > ";
+        String prompt = "Would you like to [d]elete a user, [a]dd a horse, [u]pdate a user password, [r]ace, check [w]ins of a horse, check which horses have [n]ot won a race, or [q]uit? > ";
         System.out.println(prompt);
         String userResponse = userScan.nextLine().toUpperCase().trim();
-        ArrayList<String> validResponses = new ArrayList<>(Arrays.asList("R", "Q", "W", "U", "A", "D"));
-        boolean validInput = !validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W") && !validResponses.contains("A") && !validResponses.contains("D") && !validResponses.contains("U");
+        ArrayList<String> validResponses = new ArrayList<>(Arrays.asList("R", "Q", "W", "U", "A", "D", "N"));
+        boolean validInput = !validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W") && !validResponses.contains("A") && !validResponses.contains("D") && !validResponses.contains("U") && !validResponses.contains("N");
         while (validInput) {
             System.out.println(prompt);
             userResponse = userScan.nextLine().toUpperCase().trim();
-            validInput = !validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W") && !validResponses.contains("A") && !validResponses.contains("D") && !validResponses.contains("U");
+            validInput = !validResponses.contains("R") && !validResponses.contains("Q") && !validResponses.contains("W") && !validResponses.contains("A") && !validResponses.contains("D") && !validResponses.contains("U") && !validResponses.contains("N");
 
         }
         return userResponse;
@@ -221,7 +224,7 @@ public class Main {
 
     // Checking Number of Wins of a Horse WorkFlow Validation:
     public static String checkWinsHorseValidation(Scanner userScan) {
-        String prompt = "Would you like to check the number of wins [Y]ou've gotten with this horse or how many [T]otal wins it has gotten? >";
+        String prompt = "Would you like to check the number of wins [y]ou've gotten with this horse or how many [t]otal wins it has gotten? >";
         System.out.println(prompt);
         String userResponse = userScan.nextLine().toUpperCase().trim();
         ArrayList<String> validResponses = new ArrayList<>(Arrays.asList("Y", "T"));
@@ -309,6 +312,56 @@ public class Main {
         return lowSpeed;
     }
 
+    // age validation for Horse profile
+    public static int ageValidation(Scanner userScan) {
+        int age = -1;
+        while (age > 100 || age <= 0) {
+            System.out.println("What would you like the age of this horse to be? > ");
+            String userResponse = userScan.nextLine();
+            try {
+                age = Integer.parseInt(userResponse);
+                if (age > 100) {
+                    System.out.println("The age given is too high.");
+                } else if (age <= 0) {
+                    System.out.println("The age given is too low. Please put a number greater than 0.");
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Please put a number.");
+            }
+        }
+        return age;
+    }
+
+    // Check which horses have never won:
+
+    public static void checkHorsesNeverWon(){
+        String CHECK_HORSES_NEVER_WON_QUERY = "SELECT horses.id, name FROM horses LEFT JOIN races ON horses.id = races.first_place_horse_id WHERE first_place_horse_id IS NULL;";
+        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            Statement CHECK_HORSES_NEVER_WON_STMT = conn.createStatement();
+            ResultSet horsesNeverWonRS = CHECK_HORSES_NEVER_WON_STMT.executeQuery(CHECK_HORSES_NEVER_WON_QUERY);
+            System.out.println("The horses that have never won are: ");
+
+            try {
+                while (horsesNeverWonRS.next()) {
+                    if (horsesNeverWonRS.getInt("id") == 0) {
+                        System.out.println("All horses have won at least once.");
+                    } else {
+                        System.out.println(horsesNeverWonRS.getString("name"));
+                    }
+
+
+                }
+            } catch (SQLException error) {
+                System.out.println(error.getMessage());
+            }
+        }catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
+        }
+
+    // Adding a horse as an admin
+
     public static void addHorse(Scanner userScan) {
         System.out.println("What would you like to name the horse? > ");
         String name = userScan.nextLine();
@@ -316,12 +369,20 @@ public class Main {
         int topSpeed = topSpeedValidation(userScan);
         int lowSpeed = lowSpeedValidation(userScan);
 
+        System.out.println("What color is the horse? > ");
+        String color = userScan.nextLine();
+
+        int age = ageValidation(userScan);
+
 
         try (Connection conn = DriverManager.getConnection(DB_URL)) {
             PreparedStatement INSERT_HORSE_STMT = conn.prepareStatement(INSERT_HORSE_SQL);
             INSERT_HORSE_STMT.setString(1, name);
             INSERT_HORSE_STMT.setInt(2, topSpeed);
             INSERT_HORSE_STMT.setInt(3, lowSpeed);
+            INSERT_HORSE_STMT.setString(4, color);
+            INSERT_HORSE_STMT.setInt(5, age);
+
             INSERT_HORSE_STMT.executeUpdate();
 
         } catch (SQLException e) {
